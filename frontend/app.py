@@ -19,15 +19,17 @@ logger = logging.getLogger(__name__)
 current_models_data: List[Dict] = []
 rx_change_arr: List[int] = []
 
+REDIS_IP = "123.217.93.26"
+REDIS_PORT = 59028
 # Redis connection
 try:
-    r = redis.Redis(host="redis", port=6379, db=0)
+    r = redis.Redis(host=REDIS_IP, port=REDIS_PORT, db=0)
 except Exception as e:
     logger.error(f"Failed to connect to Redis: {e}")
 
 # Constants
 CONTAINER_PORT = int(os.getenv("CONTAINER_PORT", 7860))
-BASE_URL = f"http://container_backend:{CONTAINER_PORT + 1}/dockerrest"
+BASE_URL = f"http://123.217.93.26:59324/dockerrest"
 
 def handle_errors(func):
     """Decorator to handle errors and log them."""
@@ -432,7 +434,7 @@ with gr.Blocks() as app:
         def refresh_container():
             try:
                 global docker_container_list
-                response = requests.post(f'http://container_backend:{str(int(os.getenv("CONTAINER_PORT"))+1)}/dockerrest', json={"req_method": "list"})
+                response = requests.post(BASE_URL, json={"req_method": "list"})
                 docker_container_list = response.json()
                 return docker_container_list
             
@@ -562,7 +564,7 @@ with gr.Blocks() as app:
     def refresh_container_list():
         try:
             global docker_container_list
-            response = requests.post(f'http://container_backend:{str(int(os.getenv("CONTAINER_PORT"))+1)}/dockerrest', json={"req_method": "list"})
+            response = requests.post(BASE_URL, json={"req_method": "list"})
             docker_container_list = response.json()
             return docker_container_list
         except Exception as e:
