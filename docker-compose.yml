@@ -1,0 +1,55 @@
+services:
+  redis:
+    image: redis:latest
+    container_name: container_redis
+    ports:
+      - "6379:6379"
+    environment:
+      - CONTAINER_PORT=6379
+      - HOST_PORT=6379
+    restart: unless-stopped
+  
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "7861:7861"
+    container_name: container_backend
+    environment:
+      - HFTK=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
+      - CONTAINER_PORT=7861
+      - HOST_PORT=7861
+    volumes:
+      - ./backend:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/cloud/.cache/huggingface:/root/.cache/huggingface
+    depends_on:
+      - redis
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "7860:7860"
+    container_name: container_frontend
+    depends_on:
+      - backend
+    environment:
+      - GRADIO_SERVER_NAME=0.0.0.0
+      - CONTAINER_PORT=7860
+      - HOST_PORT=7860
+    volumes:
+      - ./frontend:/usr/src/app
+      - /home/cloud/.cache/huggingface:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    restart: unless-stopped

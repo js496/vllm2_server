@@ -1,0 +1,8 @@
+transformers
+tokenizer
+pandas
+torch
+redis
+huggingface_hub
+ffmpeg
+gradio
